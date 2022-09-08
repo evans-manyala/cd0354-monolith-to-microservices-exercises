@@ -1,5 +1,6 @@
 FROM buildpack-deps:stretch
 
+# Install NodeJS dependencies
 RUN groupadd --gid 1000 node \
   && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
@@ -66,4 +67,21 @@ RUN set -ex \
   # smoke test
   && yarn --version
 
-CMD [ "node" ]
+# Create app directory
+WORKDIR /usr/src/app
+
+# Install app dependencies by copying
+# package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy app source
+COPY . .
+
+# Bind the port that the image will run on
+EXPOSE 8080
+
+# Define the Docker image's behavior at runtime
+CMD ["node", "server.js"]
